@@ -1,0 +1,84 @@
+Configuration:
+
+  Appenders:
+    Console:
+      - name: ConsoleBlue
+        target: SYSTEM_OUT
+        PatternLayout:
+          Pattern: "%d{HH:mm:ss.SSS} [%t] %highlight{%-5level %logger{36}} - %blue{%msg%n}"
+      - name: ConsoleCyan
+        target: SYSTEM_OUT
+        PatternLayout:
+          Pattern: "%d{HH:mm:ss.SSS} [%t] %highlight{%-5level %logger{36}} - %cyan{%msg%n}"
+      - name: ConsoleGreen
+        target: SYSTEM_OUT
+        PatternLayout:
+          Pattern: "%d{HH:mm:ss.SSS} [%t] %highlight{%-5level %logger{36}} - %green{%msg%n}"
+      - name: ConsoleMagenta
+        target: SYSTEM_OUT
+        PatternLayout:
+          Pattern: "%d{HH:mm:ss.SSS} [%t] %highlight{%-5level %logger{36}} - %magenta{%msg%n}"
+      - name: ConsoleRed
+        target: SYSTEM_OUT
+        PatternLayout:
+          Pattern: "%d{HH:mm:ss.SSS} [%t] %highlight{%-5level %logger{36}} - %red{%msg%n}"
+      - name: ConsoleRedBlink
+        target: SYSTEM_OUT
+        PatternLayout:
+          Pattern: "%d{HH:mm:ss.SSS} [%t] %highlight{%-5level %logger{36}} - %style{%msg%n}{blink,red}"
+      - name: ConsoleYellow
+        target: SYSTEM_OUT
+        PatternLayout:
+          Pattern: "%d{HH:mm:ss.SSS} [%t] %highlight{%-5level %logger{36}} - %yellow{%msg%n}"
+      - name: ConsoleWhite
+        target: SYSTEM_OUT
+        PatternLayout:
+          Pattern: "%d{HH:mm:ss.SSS} [%t] %highlight{%-5level %logger{36}} - %white{%msg%n}"
+ 
+  Loggers:
+    logger:
+        - name: com.hazelcast
+          level: info
+          additivity: false
+          AppenderRef:
+            ref: ConsoleCyan
+        - name: com.hazelcast.system.logo
+          level: info
+          additivity: false
+          AppenderRef:
+            ref: ConsoleRedBlink
+        - name: neil.demo
+          level: debug
+          additivity: false
+          AppenderRef:
+            ref: ConsoleWhite
+        - name: neil.demo.Application
+          level: error
+          additivity: false
+          AppenderRef:
+            ref: ConsoleRed
+        - name: org.apache
+          level: error
+          additivity: false
+          AppenderRef:
+            ref: ConsoleBlue
+        - name: org.springframework
+          level: error
+          additivity: false
+          AppenderRef:
+            ref: ConsoleBlue
+        - name: org.springframework.boot
+          level: error
+          additivity: false
+          AppenderRef:
+            ref: ConsoleYellow
+        # Useful to see the selected web port
+        - name: org.springframework.boot.web.embedded.tomcat.TomcatWebServer
+          level: info
+          additivity: false
+          AppenderRef:
+            ref: ConsoleMagenta
+    Root:
+      level: error
+      AppenderRef:
+        ref: ConsoleGreen

@@ -1,0 +1,9 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: '@my.frontend.app.name@'
+  zipkin:
+    # base-url is set in environment
+    enabled: true
