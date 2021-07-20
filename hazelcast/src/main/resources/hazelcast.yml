@@ -1,0 +1,24 @@
+hazelcast:
+  cluster-name: '@my.cluster1.name@'
+  instance-name: '${NODE_NAME}'
+  license-key: '@my.license.key@'
+
+  properties:
+    hazelcast.member.naming.moby.enabled: false
+    hazelcast.shutdownhook.policy: GRACEFUL
+
+  # Override networking from Java if required
+  network:
+    join:
+      auto-detection:
+        enabled: false
+      multicast:
+        enabled: false
+      kubernetes:
+        enabled: true
+        service-dns: '@my.cluster1.name@-hazelcast.default.svc.cluster.local'  
+    rest-api:
+      enabled: true
+      endpoint-groups:
+        HEALTH_CHECK:
+          enabled: true        

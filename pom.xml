@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>neil.demo</groupId>
+	<artifactId>fandango-pom</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<modules>
+		<module>common</module>
+		<module>ms-common</module>
+		<module>frontend</module>
+		<module>ms1-users</module>
+		<module>ms2-user</module>
+		<module>ms3-balance</module>
+		<module>ms4-txns</module>
+		<module>ms5-auths</module>
+		<module>hazelcast</module>
+		<module>management-center</module>
+		<module>zipkin</module>
+	</modules>
+
+	<properties>
+		<build.timestamp>${maven.build.timestamp}</build.timestamp>
+		<docker.image.name>${project.artifactId}</docker.image.name>
+		<docker.jar.file>${project.artifactId}-${project.version}.jar</docker.jar.file>
+		<docker.project.prefix>${user.name}</docker.project.prefix>
+		<dockerfile.skip>true</dockerfile.skip>
+		<main.basedir>${project.basedir}</main.basedir>
+		<maven.build.timestamp.format>yyyy-MM-dd'T'HH-mm-ss</maven.build.timestamp.format>
+
+		<my.cluster1.name>fandango</my.cluster1.name>
+		<my.cluster1.addresslist>${my.cluster1.name}-hazelcast.default.svc.cluster.local</my.cluster1.addresslist>
+		<my.other.user>admin</my.other.user>
+		<my.other.password>password1</my.other.password>
+		<!-- App names for lookup and Zipkin -->
+		<my.hazelcast.app.name>${user.name}-hz</my.hazelcast.app.name>
+		<my.frontend.app.name>${user.name}-frontend</my.frontend.app.name>
+		<my.ms1.app.name>${user.name}-ms1</my.ms1.app.name>
+		<my.ms2.app.name>${user.name}-ms2</my.ms2.app.name>
+		<my.ms3.app.name>${user.name}-ms3</my.ms3.app.name>
+		<my.ms4.app.name>${user.name}-ms4</my.ms4.app.name>
+		<my.ms5.app.name>${user.name}-ms5</my.ms5.app.name>
+
+		<hazelcast.version>5.0-SNAPSHOT</hazelcast.version>
+		<zipkin.version>2.23.3-SNAPSHOT</zipkin.version>
+
+		<java.version>11</java.version>
+		<dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
+		<maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
+		<maven-checkstyle-plugin.version>3.1.0</maven-checkstyle-plugin.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+		<spring-boot.version>2.5.2</spring-boot.version>
+		<spring-cloud.version>2020.0.3</spring-cloud.version>
+		<spring-cloud-zipkin.version>2.2.8.RELEASE</spring-cloud-zipkin.version>
+	</properties>
+
+	<dependencies>
+		<!-- Needed for Log4j2 config in YAML -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-yaml</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.hazelcast</groupId>
+			<artifactId>hazelcast-enterprise</artifactId>
+			<version>${hazelcast.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.hazelcast</groupId>
+			<artifactId>hazelcast-sql</artifactId>
+			<version>${hazelcast.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.hazelcast</groupId>
+					<artifactId>hazelcast</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-log4j2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webflux</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!--  Need the next two for Zipkin tracing -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-bootstrap</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-zipkin</artifactId>
+			<version>${spring-cloud-zipkin.version}</version>
+		</dependency>
+	</dependencies>
+
+	<dependencyManagement>
+		<dependencies>
+			<!-- Only for "zipkin" module -->
+			<dependency>
+				<groupId>io.zipkin</groupId>
+				<artifactId>zipkin-server</artifactId>
+				<version>${zipkin.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-parent</artifactId>
+				<version>${spring-boot.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<!-- Only for "frontend" module -->
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-thymeleaf</artifactId>
+				<version>${spring-boot.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-starter-logging</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+
+		<plugins>
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>dockerfile-maven-plugin</artifactId>
+				<version>${dockerfile-maven-plugin.version}</version>
+				<configuration>
+					<buildArgs>
+						<JAR_FILE>${docker.jar.file}</JAR_FILE>
+						<CLUSTER1_NAME>${my.cluster1.name}</CLUSTER1_NAME>
+                        <CLUSTER1_ADDRESSLIST>${my.cluster1.addresslist}</CLUSTER1_ADDRESSLIST>
+						<LICENSE>${my.license.key}</LICENSE>
+						<MY_ADMINPASSWORD>${my.other.password}</MY_ADMINPASSWORD>
+						<MY_ADMINUSER>${my.other.user}</MY_ADMINUSER>
+					</buildArgs>
+					<dockerfile>Dockerfile</dockerfile>
+					<pullNewerImage>false</pullNewerImage>
+					<repository>${docker.project.prefix}/${docker.image.name}</repository>
+					<tag>latest</tag>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<id>default</id>
+						<goals>
+							<goal>build</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>${maven-checkstyle-plugin.version}</version>
+				<configuration>
+					<configLocation>checkstyle/checkstyle.xml</configLocation>
+					<headerLocation>checkstyle/ClassHeader.txt</headerLocation>
+					<suppressionsLocation>checkstyle/suppressions.xml</suppressionsLocation>
+					<consoleOutput>true</consoleOutput>
+					<failsOnError>true</failsOnError>
+					<failOnViolation>true</failOnViolation>
+					<includeTestSourceDirectory>true</includeTestSourceDirectory>
+					<propertyExpansion>main.basedir=${main.basedir}</propertyExpansion>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>validate</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<configuration>
+						<archive>
+							<manifest>
+								<mainClass>${main.class}</mainClass>
+							</manifest>
+						</archive>
+						<descriptorRefs>
+							<descriptorRef>jar-with-dependencies</descriptorRef>
+						</descriptorRefs>
+						<tarLongFileMode>posix</tarLongFileMode>
+					</configuration>
+					<executions>
+						<execution>
+							<phase>package</phase>
+							<goals>
+								<goal>single</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<configuration>
+						<source>${java.version}</source>
+						<target>${java.version}</target>
+
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-maven-plugin</artifactId>
+					<version>${spring-boot.version}</version>
+					<executions>
+						<execution>
+							<goals>
+								<goal>repackage</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+
+	<repositories>
+		<repository>
+			<id>Hazelcast Private Release Repository</id>
+			<url>https://repository.hazelcast.com/release/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>Hazelcast Private Snapshot Repository</id>
+			<url>https://repository.hazelcast.com/snapshot/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>interval:720</updatePolicy>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>Hazelcast Public Snapshot Repository</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>interval:720</updatePolicy>
+			</snapshots>
+		</repository>
+	</repositories>
+</project>

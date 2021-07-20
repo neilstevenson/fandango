@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="fragments :: head" />
+
+<body>
+	<div th:include="fragments :: header">?</div>
+
+	<div class="major_pane">
+
+ 		<h1>Users</h1>
+ 				
+ 		<div class="minor_pane]">
+	    	<table style="border-style:ridge;">
+                <tr th:each="datum : ${data}">
+					<td th:each="field : ${datum}" th:text="${field}"/>
+					<td>
+                    	<form method="GET" th:action="@{/user}">
+                        	<input type="hidden" name="userId" th:value="${datum[0]}" />
+                            <button class="submit" type="submit">View</button>
+                        </form>
+                    </td>
+    	        </tr>
+       		</table>
+ 		</div>
+
+    </div>
+    
+	<div th:include="fragments :: footer">?</div>
+</body>
+
+</html>

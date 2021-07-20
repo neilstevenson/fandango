@@ -25,18 +25,23 @@ import com.hazelcast.config.NetworkConfig;
  */
 public class MyConstants {
 
-    //FIXME What to use in K8S ?
     public static final String TURBINE_CALL_PREFIX = "http://localhost:8466/v1/call";
     public static final String TURBINE_CONFIG_SERVICE_NAME = "serviceName";
     public static final String TURBINE_REST_PREFIX = "turbine";
     public static final String TURBINE_REST_CONFIG = "config";
 
+    public static final String REST_CALL_AUTHS = "auths";
+    public static final String REST_CALL_BALANCE = "balance";
+    public static final String REST_CALL_TXNS = "txns";
+    public static final String REST_CALL_USER = "user";
     public static final String REST_CALL_USERS = "users";
 
     // Map names, for eager creation
+    public static final String IMAP_NAME_AUTHORIZATION  = "authorization";
+    public static final String IMAP_NAME_TRANSACTION  = "transaction";
     public static final String IMAP_NAME_USER  = "user";
     public static final List<String> IMAP_NAMES =
-            List.of(IMAP_NAME_USER);
+            List.of(IMAP_NAME_AUTHORIZATION, IMAP_NAME_TRANSACTION, IMAP_NAME_USER);
 
     // Must match Docker launch scripts
     public static final int CLUSTER_BASE_PORT = NetworkConfig.DEFAULT_PORT + 1000;

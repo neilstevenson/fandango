@@ -1,0 +1,9 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: '@my.ms1.app.name@'
+  zipkin:
+    # base-url is set in environment
+    enabled: true
