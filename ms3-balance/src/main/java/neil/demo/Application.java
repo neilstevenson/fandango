@@ -19,14 +19,23 @@ package neil.demo;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.hazelcast.HazelcastAutoConfiguration;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 
 /**
  * <p>Entry point</p>
  * <p>But not Hazelcast for this microservice</p>
  */
+
+@ComponentScan(excludeFilters = {
+        @ComponentScan.Filter(
+                type = FilterType.ASSIGNABLE_TYPE,
+                value = ApplicationConfig.class
+                )
+        })
 @SpringBootApplication(exclude = {
-    HazelcastAutoConfiguration.class
-    })
+        HazelcastAutoConfiguration.class,
+        })
 public class Application {
 
     public static void main(String[] args) {

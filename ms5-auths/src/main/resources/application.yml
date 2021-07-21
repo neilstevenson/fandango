@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: '@my.ms1.app.name@'
+    name: '@my.ms5.app.name@'
   zipkin:
     # base-url is set in environment
     enabled: true
