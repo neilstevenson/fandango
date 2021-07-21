@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +30,11 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.hazelcast.cluster.Member;
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.jet.Job;
+import com.hazelcast.jet.datamodel.Tuple2;
 import com.hazelcast.map.IMap;
 import com.hazelcast.multimap.MultiMap;
 
@@ -71,6 +74,7 @@ public class ApplicationRunner {
             } else {
                 this.loadTestData();
             }
+            this.logPartitions();
 
             int count = 0;
             while (this.hazelcastInstance.getLifecycleService().isRunning()) {
@@ -80,6 +84,7 @@ public class ApplicationRunner {
                 log.info("-=-=-=-=- {} '{}' {} -=-=-=-=-=-",
                         countStr, this.hazelcastInstance.getName(), countStr);
                 if (count % FIVE == 0) {
+                    this.logPartitions();
                     this.logSizes();
                     this.logJobs();
                 }
@@ -140,6 +145,85 @@ public class ApplicationRunner {
                 );
 
     }
+
+    /**
+     * <p>Assess the loading of the partitions.
+     * </p>
+     * <p>See <a href="https://hazelcast.com/blog/calculation-in-hazelcast-cloud/">here</a>
+     * for a more efficient way to calculate Standard Deviation. Here we go for simplicity.
+     * </p>
+     */
+    private void logPartitions() {
+        CountIMapPartitionsCallable countIMapPartitionsCallable = new CountIMapPartitionsCallable();
+        final Map<Integer, Tuple2<Integer, String>> collatedResults = new TreeMap<>();
+
+        Map<Member, Future<Map<Integer, Integer>>> rawResults =
+                this.hazelcastInstance.getExecutorService("default").submitToAllMembers(countIMapPartitionsCallable);
+
+        rawResults.entrySet()
+        .stream()
+        .forEach(memberEntry -> {
+            try {
+                String member = memberEntry.getKey().getAddress().getHost() + ":" + memberEntry.getKey().getAddress().getPort();
+                Map<Integer, Integer> result = memberEntry.getValue().get();
+                result.entrySet().stream()
+                .forEach(resultEntry -> collatedResults.put(resultEntry.getKey(), Tuple2.tuple2(resultEntry.getValue(), member)));
+            } catch (Exception e) {
+                log.error("logPartitions()", e);
+            }
+        });
+
+        int partitionCountActual = collatedResults.size();
+        int partitionCountExpected = this.hazelcastInstance.getPartitionService().getPartitions().size();
+
+        // Less is ok, some may be empty.
+        if (partitionCountActual > partitionCountExpected) {
+            log.error("logPartitions() Results for {} partitions but expected {}", partitionCountActual, partitionCountExpected);
+            return;
+        }
+
+        int total = 0;
+        for (int i = 0 ; i < partitionCountExpected; i++) {
+            if (collatedResults.containsKey(i)) {
+                total += collatedResults.get(i).f0();
+            }
+        }
+        double average = total / partitionCountActual;
+        double stdDev = this.calculateStdDev(collatedResults, average);
+
+        collatedResults.entrySet()
+        .stream()
+        .forEach(entry -> {
+            log.info("Partition {} - size {} - member {}",
+                    String.format("%3d", entry.getKey()),
+                    String.format("%7d", entry.getValue().f0()),
+                    entry.getValue().f1()
+                    );
+        });
+        log.info("StdDev {}", stdDev);
+    }
+
+
+    /**
+     * <p>Calculate the deviation from the average.
+     * </p>
+     *
+     * @param collatedResults
+     * @param average
+     * @return
+     */
+    private double calculateStdDev(Map<Integer, Tuple2<Integer, String>> collatedResults, double average) {
+        double total = collatedResults.values()
+        .stream()
+        .mapToDouble(value -> {
+            double diff = value.f0() - average;
+            return diff * diff;
+        })
+        .sum();
+
+        return Math.sqrt(total / collatedResults.size());
+    }
+
 
     /**
      * <p>"{@code size()}" is a relatively expensive operation, but we
