@@ -43,7 +43,7 @@ public class MyController {
      */
     @GetMapping("/" + MyConstants.REST_CALL_USER + "/" + "{userId}")
     public CCUser user(@PathVariable String userId) {
-        log.info("user({})", userId);
+        log.info("user('{}')", userId);
 
         IMap<String, CCUser> userMap
             = this.hazelcastInstance.getMap(MyConstants.IMAP_NAME_USER);

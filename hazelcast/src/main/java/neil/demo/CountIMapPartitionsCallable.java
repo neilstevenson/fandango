@@ -26,6 +26,8 @@ import com.hazelcast.core.HazelcastInstanceAware;
 import com.hazelcast.map.IMap;
 import com.hazelcast.partition.PartitionService;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * <p>Count the {@link com.hazelcast.map.IMap IMap} entry counts per partition.
  * </p>
@@ -36,6 +38,7 @@ import com.hazelcast.partition.PartitionService;
  * <p>It can give wrong results if invoked when a rebalance occurs.
  * </p>
  */
+@Slf4j
 public class CountIMapPartitionsCallable implements Callable<Map<Integer, Integer>>,
     HazelcastInstanceAware, Serializable {
     private static final long serialVersionUID = 1L;
@@ -55,18 +58,22 @@ public class CountIMapPartitionsCallable implements Callable<Map<Integer, Intege
         final Map<Integer, Integer> result = new HashMap<>();
         final PartitionService partitionService = this.hazelcastInstance.getPartitionService();
 
-        this.hazelcastInstance.getDistributedObjects()
-        .stream()
-        .filter(distributedObject -> (distributedObject instanceof IMap))
-        .filter(distributedObject -> !distributedObject.getName().startsWith("__"))
-        .map(distributedObject -> ((IMap<?, ?>) distributedObject))
-        .forEach(iMap -> {
-            iMap.localKeySet()
-            .forEach(key -> {
-                int partitionId = partitionService.getPartition(key).getPartitionId();
-                result.merge(partitionId, 1, Integer::sum);
+        try {
+            this.hazelcastInstance.getDistributedObjects()
+            .stream()
+            .filter(distributedObject -> (distributedObject instanceof IMap))
+            .filter(distributedObject -> !distributedObject.getName().startsWith("__"))
+            .map(distributedObject -> ((IMap<?, ?>) distributedObject))
+            .forEach(iMap -> {
+                iMap.localKeySet()
+                .forEach(key -> {
+                    int partitionId = partitionService.getPartition(key).getPartitionId();
+                    result.merge(partitionId, 1, Integer::sum);
+                });
             });
-        });
+        } catch (Exception e) {
+            log.error("call()", e);
+        }
 
         return result;
     }

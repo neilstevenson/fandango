@@ -32,6 +32,7 @@ public class MyConstants {
 
     public static final String REST_CALL_AUTHS = "auths";
     public static final String REST_CALL_BALANCE = "balance";
+    public static final String REST_CALL_DETAIL = "detail";
     public static final String REST_CALL_TXNS = "txns";
     public static final String REST_CALL_USER = "user";
     public static final String REST_CALL_USERS = "users";

@@ -23,6 +23,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -182,10 +183,19 @@ public class ApplicationRunner {
             return;
         }
 
-        int total = 0;
+        double total = 0d;
+        final AtomicInteger max = new AtomicInteger(Integer.MIN_VALUE);
+        final AtomicInteger min = new AtomicInteger(Integer.MAX_VALUE);
         for (int i = 0 ; i < partitionCountExpected; i++) {
             if (collatedResults.containsKey(i)) {
-                total += collatedResults.get(i).f0();
+                int count = collatedResults.get(i).f0();
+                total += count;
+                if (count > max.get()) {
+                    max.set(count);
+                }
+                if (count < min.get()) {
+                    min.set(count);
+                }
             }
         }
         double average = total / partitionCountActual;
@@ -194,13 +204,17 @@ public class ApplicationRunner {
         collatedResults.entrySet()
         .stream()
         .forEach(entry -> {
-            log.info("Partition {} - size {} - member {}",
+            int count = entry.getValue().f0();
+            log.info("Partition {} - size {} - member {} {}{}",
                     String.format("%3d", entry.getKey()),
-                    String.format("%7d", entry.getValue().f0()),
-                    entry.getValue().f1()
+                    String.format("%7d", count),
+                    String.format("%22s", entry.getValue().f1()),
+                    (count == max.get() ? "MAXIMUM" : ""),
+                    (count == min.get() ? "MINIMUM" : "")
                     );
         });
-        log.info("StdDev {}", stdDev);
+        log.info("Total {}, StdDev {}, Maximum {}, Mininum {}",
+                Double.valueOf(total).intValue(), stdDev, max, min);
     }
 
 

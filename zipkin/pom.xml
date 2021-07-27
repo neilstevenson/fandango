@@ -12,7 +12,7 @@
 	<artifactId>fandango-zipkin</artifactId>
 
 	<properties>
-		<docker.jar.file>${project.artifactId}-${project.version}-jar-with-dependencies.jar</docker.jar.file>
+		<docker.jar.file>${project.artifactId}-${project.version}.jar</docker.jar.file>
 		<dockerfile.skip>false</dockerfile.skip>
 		<main.basedir>${project.parent.basedir}</main.basedir>
 		<main.class>zipkin.server.ZipkinServer</main.class>
@@ -28,8 +28,11 @@
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-assembly-plugin</artifactId>
+                                <groupId>org.springframework.boot</groupId>
+                                <artifactId>spring-boot-maven-plugin</artifactId>
+                                <configuration>
+                                    <mainClass>${main.class}</mainClass>
+                                </configuration>
 			</plugin>
 			<plugin>
 				<groupId>com.spotify</groupId>
