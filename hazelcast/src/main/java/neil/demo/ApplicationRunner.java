@@ -21,9 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,11 +29,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.hazelcast.cluster.Member;
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.jet.Job;
-import com.hazelcast.jet.datamodel.Tuple2;
 import com.hazelcast.map.IMap;
 import com.hazelcast.multimap.MultiMap;
 
@@ -75,7 +70,7 @@ public class ApplicationRunner {
             } else {
                 this.loadTestData();
             }
-            this.logPartitions();
+            //TODO this.logPartitions();
 
             int count = 0;
             while (this.hazelcastInstance.getLifecycleService().isRunning()) {
@@ -85,9 +80,9 @@ public class ApplicationRunner {
                 log.info("-=-=-=-=- {} '{}' {} -=-=-=-=-=-",
                         countStr, this.hazelcastInstance.getName(), countStr);
                 if (count % FIVE == 0) {
-                    this.logPartitions();
+                    //TODO this.logPartitions();
                     this.logSizes();
-                    this.logJobs();
+                    //TODO this.logJobs();
                 }
             }
         };
@@ -153,7 +148,7 @@ public class ApplicationRunner {
      * <p>See <a href="https://hazelcast.com/blog/calculation-in-hazelcast-cloud/">here</a>
      * for a more efficient way to calculate Standard Deviation. Here we go for simplicity.
      * </p>
-     */
+     *
     private void logPartitions() {
         CountIMapPartitionsCallable countIMapPartitionsCallable = new CountIMapPartitionsCallable();
         final Map<Integer, Tuple2<Integer, String>> collatedResults = new TreeMap<>();
@@ -225,7 +220,7 @@ public class ApplicationRunner {
      * @param collatedResults
      * @param average
      * @return
-     */
+     *
     private double calculateStdDev(Map<Integer, Tuple2<Integer, String>> collatedResults, double average) {
         double total = collatedResults.values()
         .stream()
@@ -236,7 +231,7 @@ public class ApplicationRunner {
         .sum();
 
         return Math.sqrt(total / collatedResults.size());
-    }
+    }*/
 
 
     /**
@@ -288,7 +283,7 @@ public class ApplicationRunner {
     /**
      * <p>Jobs in name order.
      * </p>
-     */
+     *
     private void logJobs() {
         try {
             Map<String, Job> jobs = new TreeMap<>();
@@ -306,5 +301,5 @@ public class ApplicationRunner {
             //log.error("logJobs()", e);
             log.error("logJobs() :: " + e.getMessage());
         }
-    }
+    }*/
 }

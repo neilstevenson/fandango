@@ -22,3 +22,7 @@ hazelcast:
       endpoint-groups:
         HEALTH_CHECK:
           enabled: true        
+
+  #
+  jet:
+    enabled: true

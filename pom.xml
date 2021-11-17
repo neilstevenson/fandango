@@ -45,10 +45,10 @@
 		<my.ms4.app.name>${user.name}-ms4</my.ms4.app.name>
 		<my.ms5.app.name>${user.name}-ms5</my.ms5.app.name>
 
-		<hazelcast.version>5.0-SNAPSHOT</hazelcast.version>
-		<zipkin.version>2.23.3-SNAPSHOT</zipkin.version>
+		<hazelcast.version>5.0</hazelcast.version>
+		<zipkin.version>2.23.5-SNAPSHOT</zipkin.version>
 
-		<java.version>11</java.version>
+		<java.version>17</java.version>
 		<dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
 		<maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
 		<maven-checkstyle-plugin.version>3.1.0</maven-checkstyle-plugin.version>
@@ -131,6 +131,11 @@
 			<dependency>
 				<groupId>io.zipkin</groupId>
 				<artifactId>zipkin-server</artifactId>
+				<version>${zipkin.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.zipkin.zipkin2</groupId>
+				<artifactId>zipkin-storage-hazelcast</artifactId>
 				<version>${zipkin.version}</version>
 			</dependency>
 
