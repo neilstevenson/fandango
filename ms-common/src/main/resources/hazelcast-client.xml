@@ -2,21 +2,21 @@
 <hazelcast-client xmlns="http://www.hazelcast.com/schema/client-config"
                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                   xsi:schemaLocation="http://www.hazelcast.com/schema/client-config
-                  http://www.hazelcast.com/schema/client-config/hazelcast-client-config-5.0.xsd">
+                  http://www.hazelcast.com/schema/client-config/hazelcast-client-config-5.1.xsd">
 
     <cluster-name>@my.cluster1.name@</cluster-name>
 
 	<import resource="hazelcast-import.xml"/>
-        
-    <properties>
-    	<property name="hazelcast.client.statistics.enabled">true</property>
-    </properties>
     
     <network>
+    	<!-- 
         <cluster-members>
-	    <!-- Overridden in Java -->
-            <address>999.999.999.999:5701</address>
+	        <address>999.999.999.999:5701</address>
         </cluster-members>    
+    	 -->
+        <hazelcast-cloud enabled="true">
+            <discovery-token>@my.cluster1.discovery.token@</discovery-token>
+        </hazelcast-cloud>
     </network>
     
     <connection-strategy async-start="false" reconnect-mode="OFF">
@@ -24,5 +24,7 @@
             <cluster-connect-timeout-millis>5000</cluster-connect-timeout-millis>
         </connection-retry>
     </connection-strategy>
+    
+    <metrics enabled="true"/>
 
 </hazelcast-client>

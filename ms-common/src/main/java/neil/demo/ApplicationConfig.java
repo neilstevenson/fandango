@@ -63,20 +63,24 @@ public class ApplicationConfig {
                     + clientNetworkConfig.getKubernetesConfig().getProperty("service-dns"));
         } else {
             clientNetworkConfig.getKubernetesConfig().setEnabled(false);
+            if (clientNetworkConfig.getCloudConfig().isEnabled()) {
+                log.info("Cloud configuration: "
+                        + clientNetworkConfig.getCloudConfig());
+            } else {
+                String host = System.getProperty("HOST_IP", "127.0.0.1");
+                if (host.indexOf(':') > 0) {
+                    // Ignore port if provided, since we'll use several
+                    host = host.substring(0, host.indexOf(":"));
+                }
+                int port = MyConstants.CLUSTER_BASE_PORT;
 
-            String host = System.getProperty("HOST_IP", "127.0.0.1");
-            if (host.indexOf(':') > 0) {
-                // Ignore port if provided, since we'll use several
-                host = host.substring(0, host.indexOf(":"));
+                List<String> memberList = List.of(host + ":" + port,
+                        host + ":" + (port + 1), host + ":" + (port + 2));
+                clientNetworkConfig.setAddresses(memberList);
+
+                log.warn("Non-Kubernetes configuration: member-list: "
+                        + clientNetworkConfig.getAddresses());
             }
-            int port = MyConstants.CLUSTER_BASE_PORT;
-
-            List<String> memberList = List.of(host + ":" + port,
-                    host + ":" + (port + 1), host + ":" + (port + 2));
-            clientNetworkConfig.setAddresses(memberList);
-
-            log.warn("Non-Kubernetes configuration: member-list: "
-                    + clientNetworkConfig.getAddresses());
         }
 
         return clientConfig;

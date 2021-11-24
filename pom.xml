@@ -18,6 +18,7 @@
 		<module>ms3-balance</module>
 		<module>ms4-txns</module>
 		<module>ms5-auths</module>
+		<!-- Clients don't use Hazelcast module now, but handy to keep -->
 		<module>hazelcast</module>
 		<module>management-center</module>
 		<module>zipkin</module>
@@ -32,7 +33,10 @@
 		<main.basedir>${project.basedir}</main.basedir>
 		<maven.build.timestamp.format>yyyy-MM-dd'T'HH-mm-ss</maven.build.timestamp.format>
 
-		<my.cluster1.name>fandango</my.cluster1.name>
+		<my.cluster0.name>fandango</my.cluster0.name>
+		<!-- From settings.xml -->
+		<my.cluster1.name>${my.hz.cloud.cluster1.name}</my.cluster1.name>
+		<my.cluster1.discovery.token>${my.hz.cloud.cluster1.discovery.token}</my.cluster1.discovery.token>
 		<my.cluster1.addresslist>${my.cluster1.name}-hazelcast.default.svc.cluster.local</my.cluster1.addresslist>
 		<my.other.user>admin</my.other.user>
 		<my.other.password>password1</my.other.password>
@@ -45,10 +49,12 @@
 		<my.ms4.app.name>${user.name}-ms4</my.ms4.app.name>
 		<my.ms5.app.name>${user.name}-ms5</my.ms5.app.name>
 
-		<hazelcast.version>5.0</hazelcast.version>
-		<zipkin.version>2.23.5-SNAPSHOT</zipkin.version>
+		<hazelcast.version>5.1-SNAPSHOT</hazelcast.version>
+		<zipkin.version>2.23.6-SNAPSHOT</zipkin.version>
 
+		<!-- No 17 on Cloud til 5.1 -->
 		<java.version>17</java.version>
+		<java.version>11</java.version>
 		<dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
 		<maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
 		<maven-checkstyle-plugin.version>3.1.0</maven-checkstyle-plugin.version>
@@ -186,6 +192,7 @@
 				<configuration>
 					<buildArgs>
 						<JAR_FILE>${docker.jar.file}</JAR_FILE>
+						<CLUSTER0_NAME>${my.cluster0.name}</CLUSTER0_NAME>
 						<CLUSTER1_NAME>${my.cluster1.name}</CLUSTER1_NAME>
                         <CLUSTER1_ADDRESSLIST>${my.cluster1.addresslist}</CLUSTER1_ADDRESSLIST>
 						<LICENSE>${my.license.key}</LICENSE>
