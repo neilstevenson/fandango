@@ -6,4 +6,8 @@
 
     <instance-name>@project.artifactId@</instance-name>
 
+    <client-labels>
+        <label>@build.timestamp@</label>
+    </client-labels>
+
 </hazelcast-client>

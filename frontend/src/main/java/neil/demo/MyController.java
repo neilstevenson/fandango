@@ -144,6 +144,7 @@ public class MyController {
      * @return
      */
     @GetMapping("/" + MyConstants.REST_CALL_DETAIL)
+    @SuppressWarnings("checkstyle:magicnumber")
     public ModelAndView detail(@RequestParam(name = "userId", required = true) String userId) {
         log.info("detail({})", userId);
         ModelAndView modelAndView = new ModelAndView("detail");
@@ -171,9 +172,17 @@ public class MyController {
                     + MyConstants.REST_CALL_AUTHS + "/"
                     + authIds;
 
-            ResponseEntity<CCTransaction[]> response4
-                = this.restTemplate.getForEntity(url4, CCTransaction[].class);
-            CCTransaction[] ccTransactions = response4.getBody();
+            ResponseEntity<String[][]> response4
+                = this.restTemplate.getForEntity(url4, String[][].class);
+            String[][] ccTransactionsArrArr = response4.getBody();
+            CCTransaction[] ccTransactions = new CCTransaction[ccTransactionsArrArr.length];
+            for (int i = 0; i < ccTransactions.length; i++) {
+                ccTransactions[i] = new CCTransaction();
+                ccTransactions[i].setAmount(Double.valueOf(ccTransactionsArrArr[i][0]));
+                ccTransactions[i].setTxnId(ccTransactionsArrArr[i][1]);
+                ccTransactions[i].setWhen(Long.valueOf(ccTransactionsArrArr[i][2]));
+                ccTransactions[i].setWhere(ccTransactionsArrArr[i][3]);
+            }
 
             // DTO, domain model is HazelcastJSONValue
             ResponseEntity<String[][]> response5
@@ -181,8 +190,8 @@ public class MyController {
             String[][] ccAuthorisationsArrArr = response5.getBody();
 
             log.debug("detail({}) userId :: {}", userId, userId);
-            log.debug("detail({}) ccTransactions :: {}", userId, ccTransactions.toString());
-            log.debug("detail({}) ccAuthorisationsDTO :: {}", userId, ccAuthorisationsArrArr.toString());
+            log.debug("detail({}) ccTransactions :: {}", userId, Arrays.asList(ccTransactionsArrArr));
+            log.debug("detail({}) ccAuthorisationsDTO :: {}", userId, Arrays.asList(ccAuthorisationsArrArr));
 
             modelAndView.addObject("userId", userId);
             modelAndView.addObject("ccTransactions", ccTransactions);

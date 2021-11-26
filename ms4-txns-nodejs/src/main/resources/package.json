@@ -1,0 +1,15 @@
+{
+  "name": "hazelcast",
+  "version": "1.0.0",
+  "description": "",
+  "main": "client.js",
+  "scripts": {
+    "start": "node client.js"
+  },
+  "author": "",
+  "dependencies": {
+    "async": "^3.2.2",
+    "fastify": "^3.2.4",
+    "hazelcast-client": "^5.0.2"
+  }
+}

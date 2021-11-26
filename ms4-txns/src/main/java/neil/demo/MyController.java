@@ -19,6 +19,7 @@ package neil.demo;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,7 +47,8 @@ public class MyController {
      * </p>
      */
     @GetMapping("/" + MyConstants.REST_CALL_TXNS + "/" + "{txnIds}")
-    public CCTransaction[] txns(@PathVariable String txnIds) {
+    @SuppressWarnings("checkstyle:magicnumber")
+    public String[][] txns(@PathVariable String txnIds) {
         log.info("txns('{}')", txnIds);
 
         IMap<String, CCTransaction> transactionMap
@@ -56,11 +58,25 @@ public class MyController {
 
         Collection<CCTransaction> values =
                 transactionMap.getAll(new HashSet<>(Arrays.asList(txns))).values();
+        String[][] result
+            = new String[values.size()][];
+
+        int i = 0;
+        Iterator<CCTransaction> iterator = values.iterator();
+        while (iterator.hasNext()) {
+            CCTransaction ccTransaction = iterator.next();
+            result[i] = new String[4];
+            result[i][0] = String.valueOf(ccTransaction.getAmount());
+            result[i][1] = ccTransaction.getTxnId();
+            result[i][2] = String.valueOf(ccTransaction.getWhen());
+            result[i][3] = ccTransaction.getWhere();
+            i++;
+        }
 
         log.debug("txns() :: returning '{}' items for '{}' input", values.size(), txns.length);
-        log.debug("txns() :: {}", values.toArray(new CCTransaction[values.size()]).toString());
+        log.debug("txns() :: {}", Arrays.asList(result));
 
-        return values.toArray(new CCTransaction[values.size()]);
+        return result;
     }
 
 }

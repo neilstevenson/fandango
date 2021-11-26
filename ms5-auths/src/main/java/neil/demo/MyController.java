@@ -75,7 +75,7 @@ public class MyController {
         }
 
         log.debug("auths() :: returning '{}' items for '{}' input", values.size(), auths.length);
-        log.debug("auths() :: {}", result.toString());
+        log.debug("auths() :: {}", Arrays.asList(result));
 
         return result;
     }

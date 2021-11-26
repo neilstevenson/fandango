@@ -16,6 +16,7 @@
 
 package neil.demo;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.json.JSONObject;
@@ -129,12 +130,21 @@ public class MyController {
 
         try {
             log.debug("getCCTransactions('{}') :: url4 '{}'", txnIds, url4);
-            ResponseEntity<CCTransaction[]> response4
-                = this.restTemplate.getForEntity(url4, CCTransaction[].class);
+            ResponseEntity<String[][]> response4
+                = this.restTemplate.getForEntity(url4, String[][].class);
 
-            CCTransaction[] ccTransactions = response4.getBody();
+            String[][] ccTransactionsArrArr = response4.getBody();
 
-            log.debug("getCCTransactions() :: returning '{}'", ccTransactions.toString());
+            CCTransaction[] ccTransactions = new CCTransaction[ccTransactionsArrArr.length];
+            for (int i = 0 ; i < ccTransactionsArrArr.length; i++) {
+                ccTransactions[i] = new CCTransaction();
+                ccTransactions[i].setAmount(Double.parseDouble(ccTransactionsArrArr[i][0]));
+                ccTransactions[i].setTxnId(ccTransactionsArrArr[i][1]);
+                ccTransactions[i].setWhen(Long.parseLong(ccTransactionsArrArr[i][2]));
+                ccTransactions[i].setWhere(ccTransactionsArrArr[i][3]);
+            }
+
+            log.debug("getCCTransactions() :: returning '{}'", Arrays.asList(ccTransactions));
 
             return ccTransactions;
         } catch (Exception e) {
@@ -178,7 +188,7 @@ public class MyController {
                 ccAuthorisations[i] = new HazelcastJsonValue(stringBuilder.toString());
             }
 
-            log.debug("getCCAuthorisations() :: returning '{}'", ccAuthorisations.toString());
+            log.debug("getCCAuthorisations() :: returning '{}'", Arrays.asList(ccAuthorisations));
 
             return ccAuthorisations;
         } catch (Exception e) {
