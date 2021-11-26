@@ -18,12 +18,15 @@ package neil.demo;
 
 import java.util.List;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+
+import com.hazelcast.core.HazelcastJsonValue;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,15 +59,16 @@ public class MyController {
 
         CCUser ccUser = this.getUser(userId);
         CCTransaction[] ccTransactions = this.getCCTransactions(ccUser.getTxnIds());
-        CCAuthorisation[] ccAuthorisations = this.getCCAuthorisations(ccUser.getAuthIds());
+        HazelcastJsonValue[] ccAuthorisations = this.getCCAuthorisations(ccUser.getAuthIds());
 
         double balance = Double.valueOf(ccUser.getCreditLimit());
 
         for (CCTransaction ccTransaction : ccTransactions) {
             balance -= ccTransaction.getAmount();
         }
-        for (CCAuthorisation ccAuthorisation : ccAuthorisations) {
-            balance -= ccAuthorisation.getAmount();
+        for (HazelcastJsonValue ccAuthorisation : ccAuthorisations) {
+            JSONObject json = new JSONObject(ccAuthorisation.toString());
+            balance -= json.getDouble("amount");
         }
 
         // Do not allow to go further overdrawn
@@ -128,7 +132,11 @@ public class MyController {
             ResponseEntity<CCTransaction[]> response4
                 = this.restTemplate.getForEntity(url4, CCTransaction[].class);
 
-            return response4.getBody();
+            CCTransaction[] ccTransactions = response4.getBody();
+
+            log.debug("getCCTransactions() :: returning '{}'", ccTransactions.toString());
+
+            return ccTransactions;
         } catch (Exception e) {
             log.error("getCCTransactions('" + txnIds + "')", e);
             return new CCTransaction[0];
@@ -142,7 +150,7 @@ public class MyController {
      * @param authIds
      * @return
      */
-    private CCAuthorisation[] getCCAuthorisations(List<String> authIds) {
+    private HazelcastJsonValue[] getCCAuthorisations(List<String> authIds) {
         log.info("getCCAuthorisations('{}')", authIds);
 
         String url5 = MyConstants.TURBINE_CALL_PREFIX + "/"
@@ -152,13 +160,30 @@ public class MyController {
 
         try {
             log.debug("getCCAuthorisations('{}') :: url4 '{}'", authIds, url5);
-            ResponseEntity<CCAuthorisation[]> response5
-                = this.restTemplate.getForEntity(url5, CCAuthorisation[].class);
+            // DTO, domain model is HazelcastJSONValue
+            ResponseEntity<String[][]> response5
+                = this.restTemplate.getForEntity(url5, String[][].class);
 
-            return response5.getBody();
+            String[][] ccAuthorisationsArrArr = response5.getBody();
+
+            HazelcastJsonValue[] ccAuthorisations =
+                    new HazelcastJsonValue[ccAuthorisationsArrArr.length];
+            for (int i = 0 ; i < ccAuthorisationsArrArr.length; i++) {
+                StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder.append("{");
+                stringBuilder.append(" \"authId\" : \"" + ccAuthorisationsArrArr[i][1] + "\"");
+                stringBuilder.append(",\"amount\" : " + ccAuthorisationsArrArr[i][0]);
+                stringBuilder.append(",\"where\" : \"" + ccAuthorisationsArrArr[i][2] + "\"");
+                stringBuilder.append("}");
+                ccAuthorisations[i] = new HazelcastJsonValue(stringBuilder.toString());
+            }
+
+            log.debug("getCCAuthorisations() :: returning '{}'", ccAuthorisations.toString());
+
+            return ccAuthorisations;
         } catch (Exception e) {
             log.error("getCCAuthorisations('" + authIds + "')", e);
-            return new CCAuthorisation[0];
+            return new HazelcastJsonValue[0];
         }
     }
 

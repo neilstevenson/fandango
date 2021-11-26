@@ -16,21 +16,31 @@
 
 package neil.demo;
 
-import java.io.Serializable;
-
-import lombok.Data;
+import com.hazelcast.nio.serialization.Portable;
+import com.hazelcast.nio.serialization.PortableFactory;
 
 /**
- * <p>A credit card authorization, a hold on some funds
- * until the matching transaction arrives.
+ * <p>This factory is not defined to the server.
  * </p>
+ * <p>Alphabetic order.
+ * </p>
+ * <ol>
+ * <li>Authorisation
+ * </li>
+ * <li>Transaction
+ * </li>
+ * <li>User
+ * </li>
+ * </ol>
  */
-@SuppressWarnings("serial")
-@Data
-public class CCAuthorisation implements Serializable {
+public class MyPortableFactory implements PortableFactory {
 
-    private String authId;
-    private double amount;
-    private String where;
+    @Override
+    public Portable create(int typeId) {
+        if (typeId == 2) {
+            return new CCTransaction();
+        }
+        return null;
+    }
 
 }

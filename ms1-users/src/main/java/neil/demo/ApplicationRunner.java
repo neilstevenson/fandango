@@ -18,6 +18,7 @@ package neil.demo;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -32,6 +33,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.HazelcastJsonValue;
 import com.hazelcast.map.IMap;
 import com.hazelcast.multimap.MultiMap;
 
@@ -65,14 +67,16 @@ public class ApplicationRunner {
                 this.hazelcastInstance.getMap(iMapName);
             }
 
-            IMap<String, CCUser> userMap
-                = this.hazelcastInstance.getMap(MyConstants.IMAP_NAME_USER);
-            if (!userMap.isEmpty()) {
-                log.info("Skip loading, '{}' map not empty, assuming test data load already done",
-                        userMap.getName());
-            } else {
+            // Only one instance of this service, and data static, so safe to overwrite
+            //IMap<String, CCUser> userMap
+            //    = this.hazelcastInstance.getMap(MyConstants.IMAP_NAME_USER);
+            //if (!userMap.isEmpty()) {
+            //    log.info("Skip loading, '{}' map not empty, assuming test data load already done",
+            //            userMap.getName());
+            //} else {
                 this.loadTestData();
-            }
+                this.runEntryProcessors();
+            //}
 
             int count = 0;
             while (this.hazelcastInstance.getLifecycleService().isRunning()) {
@@ -89,41 +93,50 @@ public class ApplicationRunner {
     }
 
 
+    /** Pre-JSON, {@code CCAuthorisation} was:
+     * <pre>
+     *  private String authId;
+     *  private double amount;
+     *  private String where;
+     *  </pre>
+     */
     private void createOrReplaceMappings() {
-        try {
-            String mapping1 = "CREATE OR REPLACE MAPPING \"" + MyConstants.IMAP_NAME_AUTHORIZATION + "\" "
-                    + "TYPE IMap "
-                    + " OPTIONS ( "
-                    + " 'keyFormat' = 'java',"
-                    + " 'keyJavaClass' = '" + String.class.getCanonicalName() + "',"
-                    + " 'valueFormat' = 'java',"
-                    + " 'valueJavaClass' = '" + CCAuthorisation.class.getCanonicalName() + "'"
-                    + " )";
-            String mapping2 = "CREATE OR REPLACE MAPPING \"" + MyConstants.IMAP_NAME_TRANSACTION + "\" "
-                    + "TYPE IMap "
-                    + " OPTIONS ( "
-                    + " 'keyFormat' = 'java',"
-                    + " 'keyJavaClass' = '" + String.class.getCanonicalName() + "',"
-                    + " 'valueFormat' = 'java',"
-                    + " 'valueJavaClass' = '" + CCTransaction.class.getCanonicalName() + "'"
-                    + " )";
-            String mapping3 = "CREATE OR REPLACE MAPPING \"" + MyConstants.IMAP_NAME_USER + "\" "
-                    + "TYPE IMap "
-                    + " OPTIONS ( "
-                    + " 'keyFormat' = 'java',"
-                    + " 'keyJavaClass' = '" + String.class.getCanonicalName() + "',"
-                    + " 'valueFormat' = 'java',"
-                    + " 'valueJavaClass' = '" + CCUser.class.getCanonicalName() + "'"
-                    + " )";
-            log.info("Adding: " + mapping1);
-            this.hazelcastInstance.getSql().execute(mapping1);
-            log.info("Adding: " + mapping2);
-            this.hazelcastInstance.getSql().execute(mapping2);
-            log.info("Adding: " + mapping3);
-            this.hazelcastInstance.getSql().execute(mapping3);
-        } catch (Exception e) {
-            //FIXME needs SQL, 5.0 ?
-            log.error("createOrReplaceMappings()", e);
+        String mapping1 = "CREATE OR REPLACE MAPPING \"" + MyConstants.IMAP_NAME_AUTHORIZATION + "\" "
+                + " ("
+                + "    __key VARCHAR,"
+                + "    \"authId\" VARCHAR EXTERNAL NAME \"this.authId\","
+                + "    \"amount\" DOUBLE EXTERNAL NAME \"this.amount\","
+                + "    \"where\" VARCHAR EXTERNAL NAME \"this.where\""
+                + ") "
+                + "TYPE IMap "
+                + " OPTIONS ( "
+                + " 'keyFormat' = 'java',"
+                + " 'keyJavaClass' = '" + String.class.getCanonicalName() + "',"
+                + " 'valueFormat' = 'json-flat'"
+                + " )";
+        String mapping2 = "CREATE OR REPLACE MAPPING \"" + MyConstants.IMAP_NAME_TRANSACTION + "\" "
+                + "TYPE IMap "
+                + " OPTIONS ( "
+                + " 'keyFormat' = 'java',"
+                + " 'keyJavaClass' = '" + String.class.getCanonicalName() + "',"
+                + " 'valueFormat' = 'java',"
+                + " 'valueJavaClass' = '" + CCTransaction.class.getCanonicalName() + "'"
+                + " )";
+        String mapping3 = "CREATE OR REPLACE MAPPING \"" + MyConstants.IMAP_NAME_USER + "\" "
+                + "TYPE IMap "
+                + " OPTIONS ( "
+                + " 'keyFormat' = 'java',"
+                + " 'keyJavaClass' = '" + String.class.getCanonicalName() + "',"
+                + " 'valueFormat' = 'java',"
+                + " 'valueJavaClass' = '" + CCUser.class.getCanonicalName() + "'"
+                + " )";
+        for (String mapping : List.of(mapping1, mapping2, mapping3)) {
+            try {
+                log.info("Adding: " + mapping);
+                this.hazelcastInstance.getSql().execute(mapping);
+            } catch (Exception e) {
+                log.error("createOrReplaceMappings():" + mapping, e);
+            }
         }
     }
 
@@ -134,7 +147,7 @@ public class ApplicationRunner {
      */
     @SuppressWarnings("checkstyle:magicnumber")
     private void loadTestData() {
-        IMap<String, CCAuthorisation> authorisationMap
+        IMap<String, HazelcastJsonValue> authorisationMap
             = this.hazelcastInstance.getMap(MyConstants.IMAP_NAME_AUTHORIZATION);
         IMap<String, CCTransaction> transactionMap
             = this.hazelcastInstance.getMap(MyConstants.IMAP_NAME_TRANSACTION);
@@ -155,13 +168,18 @@ public class ApplicationRunner {
         });
 
         Arrays.stream(TestData.AUTHS).forEach((Object[] datum) -> {
-            CCAuthorisation ccAuthorisation = new CCAuthorisation();
+            String authId = datum[0].toString();
+            Double amount = Double.parseDouble(datum[1].toString());
+            String where = datum[2].toString();
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("{");
+            stringBuilder.append(" \"authId\" : \"" + authId + "\"");
+            stringBuilder.append(",\"amount\" : " + amount);
+            stringBuilder.append(",\"where\" : \"" + where + "\"");
+            stringBuilder.append("}");
+            HazelcastJsonValue ccAuthorisation = new HazelcastJsonValue(stringBuilder.toString());
 
-            ccAuthorisation.setAuthId(datum[0].toString());
-            ccAuthorisation.setAmount(Double.parseDouble(datum[1].toString()));
-            ccAuthorisation.setWhere(datum[2].toString());
-
-            authorisationMap.set(ccAuthorisation.getAuthId(), ccAuthorisation);
+            authorisationMap.set(authId, ccAuthorisation);
         });
 
         Arrays.stream(TestData.TXNS).forEach((Object[] datum) -> {
@@ -181,6 +199,35 @@ public class ApplicationRunner {
 
     }
 
+    /**
+     * <p>Run entry processors to test serverside deserialization.
+     * </p>
+     */
+    private void runEntryProcessors() {
+        IMap<String, HazelcastJsonValue> authorisationMap
+            = this.hazelcastInstance.getMap(MyConstants.IMAP_NAME_AUTHORIZATION);
+        IMap<String, CCTransaction> transactionMap
+            = this.hazelcastInstance.getMap(MyConstants.IMAP_NAME_TRANSACTION);
+
+        MyCCAuthorisationEntryProcessor myCCAuthorisationEntryProcessor
+            = new MyCCAuthorisationEntryProcessor();
+        MyCCTransactionEntryProcessor myCCTransactionEntryProcessor
+            = new MyCCTransactionEntryProcessor();
+
+        for (String key : authorisationMap.keySet()) {
+            Object result
+                = authorisationMap.executeOnKey(key, myCCAuthorisationEntryProcessor);
+            log.info("{} :EntryProcessor: key '{}' : {}", authorisationMap.getName(), key,
+                    (result == null ? "<<null>>" : result.toString()));
+        }
+        for (String key : transactionMap.keySet()) {
+            @SuppressWarnings("unchecked")
+            Object result
+                = transactionMap.executeOnKey(key, myCCTransactionEntryProcessor);
+            log.info("{} :EntryProcessor: key '{}' : {}", transactionMap.getName(), key,
+                    (result == null ? "<<null>>" : result.toString()));
+        }
+    }
 
 
     /**

@@ -32,6 +32,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.HazelcastJsonValue;
 import com.hazelcast.map.IMap;
 import com.hazelcast.multimap.MultiMap;
 
@@ -97,7 +98,7 @@ public class ApplicationRunner {
      */
     @SuppressWarnings("checkstyle:magicnumber")
     private void loadTestData() {
-        IMap<String, CCAuthorisation> authorisationMap
+        IMap<String, HazelcastJsonValue> authorisationMap
             = this.hazelcastInstance.getMap(MyConstants.IMAP_NAME_AUTHORIZATION);
         IMap<String, CCTransaction> transactionMap
             = this.hazelcastInstance.getMap(MyConstants.IMAP_NAME_TRANSACTION);
@@ -118,13 +119,18 @@ public class ApplicationRunner {
         });
 
         Arrays.stream(TestData.AUTHS).forEach((Object[] datum) -> {
-            CCAuthorisation ccAuthorisation = new CCAuthorisation();
+            String authId = datum[0].toString();
+            Double amount = Double.parseDouble(datum[1].toString());
+            String where = datum[2].toString();
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("{");
+            stringBuilder.append(" \"authId\" : \"" + authId + "\"");
+            stringBuilder.append(",\"amount\" : " + amount);
+            stringBuilder.append(",\"where\" : \"" + where + "\"");
+            stringBuilder.append("}");
+            HazelcastJsonValue ccAuthorisation = new HazelcastJsonValue(stringBuilder.toString());
 
-            ccAuthorisation.setAuthId(datum[0].toString());
-            ccAuthorisation.setAmount(Double.parseDouble(datum[1].toString()));
-            ccAuthorisation.setWhere(datum[2].toString());
-
-            authorisationMap.set(ccAuthorisation.getAuthId(), ccAuthorisation);
+            authorisationMap.set(authId, ccAuthorisation);
         });
 
         Arrays.stream(TestData.TXNS).forEach((Object[] datum) -> {

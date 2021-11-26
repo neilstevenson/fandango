@@ -16,7 +16,11 @@
 
 package neil.demo;
 
-import java.io.Serializable;
+import java.io.IOException;
+
+import com.hazelcast.nio.serialization.Portable;
+import com.hazelcast.nio.serialization.PortableReader;
+import com.hazelcast.nio.serialization.PortableWriter;
 
 import lombok.Data;
 
@@ -24,13 +28,35 @@ import lombok.Data;
  * <p>A simplistic credit card transaction
  * </p>
  */
-@SuppressWarnings("serial")
 @Data
-public class CCTransaction implements Serializable {
+public class CCTransaction implements Portable {
 
     private String txnId;
     private double amount;
     private String where;
     private long when;
+
+    @Override
+    public int getClassId() {
+        return 2;
+    }
+    @Override
+    public int getFactoryId() {
+        return 1;
+    }
+    @Override
+    public void readPortable(PortableReader portableReader) throws IOException {
+        this.txnId = portableReader.readString("txnId");
+        this.amount = portableReader.readDouble("amount");
+        this.where = portableReader.readString("where");
+        this.when = portableReader.readLong("when");
+    }
+    @Override
+    public void writePortable(PortableWriter portableWriter) throws IOException {
+        portableWriter.writeString("txnId", this.txnId);
+        portableWriter.writeDouble("amount", this.amount);
+        portableWriter.writeString("where", this.where);
+        portableWriter.writeLong("when", this.when);
+    }
 
 }

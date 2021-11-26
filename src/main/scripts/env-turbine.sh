@@ -12,6 +12,10 @@ if [ "$FIRST" != "$SECOND" ]
 then
  MODULE=${FIRST}-${SECOND}
 fi
+if [ "${CLIENT}" != "" ]
+then
+ MODULE=${MODULE}-${CLIENT}
+fi
 
 LOGFILE=/tmp/`basename $0`.$$
 turbine setup --no-mc --no-trace > $LOGFILE 2>&1

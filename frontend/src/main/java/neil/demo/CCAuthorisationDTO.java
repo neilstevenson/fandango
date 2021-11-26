@@ -16,24 +16,21 @@
 
 package neil.demo;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.hazelcast.HazelcastAutoConfiguration;
+import java.io.Serializable;
+
+import lombok.Data;
 
 /**
- * <p>Entry point</p>
- * <p>But not Hazelcast for the FrontEnd</p>
+ * <p>A credit card authorization, a hold on some funds
+ * until the matching transaction arrives.
+ * </p>
  */
-@SpringBootApplication(exclude = {
-    HazelcastAutoConfiguration.class
-    })
-public class Application {
+@SuppressWarnings("serial")
+@Data
+public class CCAuthorisationDTO implements Serializable {
 
-    //FIXME ms5
-    //FIXME ms4
-
-    public static void main(String[] args) throws Exception {
-        SpringApplication.run(Application.class, args);
-    }
+    private String authId;
+    private double amount;
+    private String where;
 
 }

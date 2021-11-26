@@ -57,6 +57,7 @@ public class MyController {
 
         Collection<Object[]> users = userMap.project(projection);
         log.debug("users() :: returning '{}' items", users.size());
+        log.debug("users() :: {}", users);
 
         return users.toArray(new Object[users.size()][]);
     }

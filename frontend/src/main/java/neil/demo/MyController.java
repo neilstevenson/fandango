@@ -175,13 +175,18 @@ public class MyController {
                 = this.restTemplate.getForEntity(url4, CCTransaction[].class);
             CCTransaction[] ccTransactions = response4.getBody();
 
-            ResponseEntity<CCAuthorisation[]> response5
-                = this.restTemplate.getForEntity(url5, CCAuthorisation[].class);
-            CCAuthorisation[] ccAuthorisations = response5.getBody();
+            // DTO, domain model is HazelcastJSONValue
+            ResponseEntity<String[][]> response5
+                = this.restTemplate.getForEntity(url5, String[][].class);
+            String[][] ccAuthorisationsArrArr = response5.getBody();
+
+            log.debug("detail({}) userId :: {}", userId, userId);
+            log.debug("detail({}) ccTransactions :: {}", userId, ccTransactions.toString());
+            log.debug("detail({}) ccAuthorisationsDTO :: {}", userId, ccAuthorisationsArrArr.toString());
 
             modelAndView.addObject("userId", userId);
             modelAndView.addObject("ccTransactions", ccTransactions);
-            modelAndView.addObject("ccAuthorisations", ccAuthorisations);
+            modelAndView.addObject("ccAuthorisations", ccAuthorisationsArrArr);
         } catch (Exception e) {
             log.error("detail(" + userId + ")", e);
         }

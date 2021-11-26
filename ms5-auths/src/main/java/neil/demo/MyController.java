@@ -18,14 +18,18 @@ package neil.demo;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.Objects;
 import java.util.TreeSet;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.HazelcastJsonValue;
 import com.hazelcast.map.IMap;
 
 import lombok.extern.slf4j.Slf4j;
@@ -46,20 +50,34 @@ public class MyController {
      * </p>
      */
     @GetMapping("/" + MyConstants.REST_CALL_AUTHS + "/" + "{authIds}")
-    public CCAuthorisation[] auths(@PathVariable String authIds) {
+    public String[][] auths(@PathVariable String authIds) {
         log.info("auths('{}')", authIds);
 
-        IMap<String, CCAuthorisation> authorisationMap
+        IMap<String, HazelcastJsonValue> authorisationMap
             = this.hazelcastInstance.getMap(MyConstants.IMAP_NAME_AUTHORIZATION);
 
         String[] auths = authIds.split(",");
 
-        Collection<CCAuthorisation> values =
+        Collection<HazelcastJsonValue> values =
             authorisationMap.getAll(new TreeSet<>(Arrays.asList(auths))).values();
+        String[][] result
+            = new String[values.size()][];
+
+        int i = 0;
+        Iterator<HazelcastJsonValue> iterator = values.iterator();
+        while (iterator.hasNext()) {
+            JSONObject json = new JSONObject(iterator.next().toString());
+            result[i] = new String[3];
+            result[i][0] = Objects.toString(json.getDouble("amount"));
+            result[i][1] = json.getString("authId");
+            result[i][2] = json.getString("where");
+            i++;
+        }
 
         log.debug("auths() :: returning '{}' items for '{}' input", values.size(), auths.length);
+        log.debug("auths() :: {}", result.toString());
 
-        return values.toArray(new CCAuthorisation[values.size()]);
+        return result;
     }
 
 }

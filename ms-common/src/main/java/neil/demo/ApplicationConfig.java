@@ -19,6 +19,7 @@ package neil.demo;
 import java.io.IOException;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -38,6 +39,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ApplicationConfig {
 
+    @Value("${my.cluster0.name}")
+    private String myCluster0Name;
+
     /**
      * <p>Configure for Kubernetes or direct connectivity.
      * </p>
@@ -47,6 +51,8 @@ public class ApplicationConfig {
         ClientConfig clientConfig = new XmlClientConfigBuilder("hazelcast-client.xml").build();
 
         ClientNetworkConfig clientNetworkConfig = clientConfig.getNetworkConfig();
+
+        clientConfig.getSerializationConfig().addPortableFactory(1, new MyPortableFactory());
 
         if (System.getProperty("my.kubernetes.enabled", "").equals("true")) {
             KubernetesConfig kubernetesConfig = new KubernetesConfig();
@@ -67,6 +73,7 @@ public class ApplicationConfig {
                 log.info("Cloud configuration: "
                         + clientNetworkConfig.getCloudConfig());
             } else {
+                clientConfig.setClusterName(this.myCluster0Name);
                 String host = System.getProperty("HOST_IP", "127.0.0.1");
                 if (host.indexOf(':') > 0) {
                     // Ignore port if provided, since we'll use several

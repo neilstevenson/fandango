@@ -58,6 +58,7 @@ public class MyController {
                 transactionMap.getAll(new HashSet<>(Arrays.asList(txns))).values();
 
         log.debug("txns() :: returning '{}' items for '{}' input", values.size(), txns.length);
+        log.debug("txns() :: {}", values.toArray(new CCTransaction[values.size()]).toString());
 
         return values.toArray(new CCTransaction[values.size()]);
     }

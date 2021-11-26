@@ -41,9 +41,9 @@
                     <th>Where</th>
             	</tr>
                 <tr th:each="ccAuthorisation : ${ccAuthorisations}">
-                    <td th:text="${ccAuthorisation.authId}"/>
-                    <td th:text="${ccAuthorisation.amount}"/>
-                    <td th:text="${ccAuthorisation.where}"/>
+                    <td th:text="${ccAuthorisation[1]}"/>
+                    <td th:text="${ccAuthorisation[0]}"/>
+                    <td th:text="${ccAuthorisation[2]}"/>
             	</tr>
 			</table>
  		</div>

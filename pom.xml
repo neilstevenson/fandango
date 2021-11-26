@@ -17,7 +17,9 @@
 		<module>ms2-user</module>
 		<module>ms3-balance</module>
 		<module>ms4-txns</module>
+		<module>ms4-txns-nodejs</module>
 		<module>ms5-auths</module>
+		<module>ms5-auths-golang</module>
 		<!-- Clients don't use Hazelcast module now, but handy to keep -->
 		<module>hazelcast</module>
 		<module>management-center</module>
@@ -55,6 +57,7 @@
 		<!-- No 17 on Cloud til 5.1 -->
 		<java.version>17</java.version>
 		<java.version>11</java.version>
+		<json.version>20190722</json.version>
 		<dockerfile-maven-plugin.version>1.4.13</dockerfile-maven-plugin.version>
 		<maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
 		<maven-checkstyle-plugin.version>3.1.0</maven-checkstyle-plugin.version>
@@ -65,74 +68,14 @@
 		<spring-cloud-zipkin.version>2.2.8.RELEASE</spring-cloud-zipkin.version>
 	</properties>
 
-	<dependencies>
-		<!-- Needed for Log4j2 config in YAML -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.dataformat</groupId>
-			<artifactId>jackson-dataformat-yaml</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.hazelcast</groupId>
-			<artifactId>hazelcast-enterprise</artifactId>
-			<version>${hazelcast.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.hazelcast</groupId>
-			<artifactId>hazelcast-sql</artifactId>
-			<version>${hazelcast.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.hazelcast</groupId>
-					<artifactId>hazelcast</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-log4j2</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-starter-logging</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-webflux</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-starter-logging</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<!--  Need the next two for Zipkin tracing -->
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-bootstrap</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-zipkin</artifactId>
-			<version>${spring-cloud-zipkin.version}</version>
-		</dependency>
-	</dependencies>
-
 	<dependencyManagement>
 		<dependencies>
+			<dependency>
+				<groupId>com.hazelcast</groupId>
+				<artifactId>hazelcast</artifactId>
+				<version>${hazelcast.version}</version>
+			</dependency>
+
 			<!-- Only for "zipkin" module -->
 			<dependency>
 				<groupId>io.zipkin</groupId>
