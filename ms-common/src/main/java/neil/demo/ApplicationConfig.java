@@ -65,15 +65,21 @@ public class ApplicationConfig {
 
             clientNetworkConfig.setKubernetesConfig(kubernetesConfig);
 
-            log.info("Kubernetes configuration: service-dns: "
+            log.info("Kubernetes configuration: cluster:" + clientConfig.getClusterName()
+                    + ": service-dns: "
                     + clientNetworkConfig.getKubernetesConfig().getProperty("service-dns"));
         } else {
             clientNetworkConfig.getKubernetesConfig().setEnabled(false);
-            if (clientNetworkConfig.getCloudConfig().isEnabled()) {
-                log.info("Cloud configuration: "
-                        + clientNetworkConfig.getCloudConfig());
+            String cloudDiscoveryToken = clientNetworkConfig.getCloudConfig().getDiscoveryToken();
+            log.info("Cloud enabled {} token {}", clientNetworkConfig.getCloudConfig().isEnabled(),
+                    cloudDiscoveryToken);
+            if (cloudDiscoveryToken != null && cloudDiscoveryToken.length() > 0) {
+                clientNetworkConfig.getCloudConfig().setEnabled(true);
+                log.info("Cloud configuration: cluster: " + clientConfig.getClusterName()
+                        + ": config: " + clientNetworkConfig.getCloudConfig());
             } else {
                 clientConfig.setClusterName(this.myCluster0Name);
+                clientNetworkConfig.getCloudConfig().setEnabled(false);
                 String host = System.getProperty("HOST_IP", "127.0.0.1");
                 if (host.indexOf(':') > 0) {
                     // Ignore port if provided, since we'll use several
@@ -85,7 +91,8 @@ public class ApplicationConfig {
                         host + ":" + (port + 1), host + ":" + (port + 2));
                 clientNetworkConfig.setAddresses(memberList);
 
-                log.warn("Non-Kubernetes configuration: member-list: "
+                log.info("Non-Kubernetes configuration: cluster: "
+                        + clientConfig.getClusterName() + ": member-list: "
                         + clientNetworkConfig.getAddresses());
             }
         }
