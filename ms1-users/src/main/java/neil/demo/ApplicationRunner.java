@@ -18,6 +18,7 @@ package neil.demo;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,6 +37,9 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.HazelcastJsonValue;
 import com.hazelcast.map.IMap;
 import com.hazelcast.multimap.MultiMap;
+import com.hazelcast.sql.SqlResult;
+import com.hazelcast.sql.SqlRow;
+import com.hazelcast.sql.SqlRowMetadata;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -89,13 +93,13 @@ public class ApplicationRunner {
             int count = 0;
             while (this.hazelcastInstance.getLifecycleService().isRunning()) {
                 TimeUnit.MINUTES.sleep(1);
-                count++;
                 String countStr = String.format("%05d", count);
                 log.info("-=-=-=-=- {} '{}' {} -=-=-=-=-=-",
                         countStr, this.hazelcastInstance.getName(), countStr);
                 if (count % FIVE == 0) {
                     this.logSizes();
                 }
+                count++;
             }
         };
     }
@@ -272,11 +276,14 @@ public class ApplicationRunner {
         .forEach(name -> {
             IMap<?, ?> iMap = this.hazelcastInstance.getMap(name);
             log.info("IMap '{}'.size() => {}", iMap.getName(), iMap.size());
-            // HazelcastJsonValue isn't comparable
-            if (name.startsWith("zipkin")) {
-                new HashSet<>(iMap.keySet()).stream().forEach(key -> log.debug("    - key: '{}'", key));
-            } else {
-                new TreeSet<>(iMap.keySet()).stream().forEach(key -> log.debug("    - key: '{}'", key));
+            // Use standard print if query fails
+            if (!this.runSelectQuery(iMap.getName())) {
+                // HazelcastJsonValue isn't comparable
+                if (name.startsWith("zipkin")) {
+                    new HashSet<>(iMap.keySet()).stream().forEach(key -> log.debug("    - key: '{}'", key));
+                } else {
+                    new TreeSet<>(iMap.keySet()).stream().forEach(key -> log.debug("    - key: '{}'", key));
+                }
             }
         });
         multiMapNames
@@ -293,4 +300,31 @@ public class ApplicationRunner {
 
     }
 
+    /**
+     * @param mapName
+     * @return Any exception?
+     */
+    private boolean runSelectQuery(String mapName) {
+        String sql = "SELECT * FROM \"" + mapName + "\"";
+        log.debug("    " + sql);
+        try {
+            SqlResult sqlResult = this.hazelcastInstance.getSql().execute(sql);
+            Iterator<SqlRow> iterator = sqlResult.iterator();
+            int count = 0;
+            while (iterator.hasNext()) {
+                SqlRow sqlRow = iterator.next();
+                log.debug("    " + count + ":");
+                SqlRowMetadata sqlRowMetadata = sqlRow.getMetadata();
+                for (int i = 0 ; i < sqlRowMetadata.getColumnCount(); i++) {
+                    log.debug("     -:" + sqlRow.getObject(i));
+                }
+                count++;
+            }
+            log.debug("    [{} row{}] {}", count, (count == 1 ? "" : "s"), mapName);
+            return true;
+        } catch (Exception e) {
+            log.error("runSelectQuery():" + sql + ":" + e.getMessage());
+            return false;
+        }
+    }
 }
