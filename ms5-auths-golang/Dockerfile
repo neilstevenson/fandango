@@ -1,4 +1,4 @@
-FROM library/golang:1.17.2-buster
+FROM library/golang:1.17.3-buster
 
 WORKDIR /root
 

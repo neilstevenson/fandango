@@ -52,7 +52,7 @@
 		<my.ms5.app.name>${user.name}-ms5</my.ms5.app.name>
 
 		<hazelcast.version>5.1-SNAPSHOT</hazelcast.version>
-		<zipkin.version>2.23.6-SNAPSHOT</zipkin.version>
+		<zipkin.version>2.23.9-SNAPSHOT</zipkin.version>
 
 		<!-- No 17 on Cloud til 5.1 -->
 		<java.version>17</java.version>

@@ -61,7 +61,11 @@ public class ApplicationRunner {
             log.info("-=-=-=-=- START '{}' START -=-=-=-=-=-",
                 this.hazelcastInstance.getName());
 
-            this.createOrReplaceMappings();
+            try {
+                this.createOrReplaceMappings();
+            } catch (Exception e) {
+                log.error("createOrReplaceMappings()", e);
+            }
 
             for (String iMapName : MyConstants.IMAP_NAMES) {
                 this.hazelcastInstance.getMap(iMapName);
@@ -75,7 +79,11 @@ public class ApplicationRunner {
             //            userMap.getName());
             //} else {
                 this.loadTestData();
-                this.runEntryProcessors();
+                try {
+                    this.runEntryProcessors();
+                } catch (Exception e) {
+                    log.error("runEntryProcessors()", e);
+                }
             //}
 
             int count = 0;
@@ -101,6 +109,8 @@ public class ApplicationRunner {
      *  </pre>
      */
     private void createOrReplaceMappings() {
+        this.hazelcastInstance.getSql().execute("SHOW MAPPINGS").forEach(row ->
+            log.info("createOrReplaceMappings: BEFORE: " + row));
         String mapping1 = "CREATE OR REPLACE MAPPING \"" + MyConstants.IMAP_NAME_AUTHORIZATION + "\" "
                 + " ("
                 + "    __key VARCHAR,"
@@ -138,6 +148,8 @@ public class ApplicationRunner {
                 log.error("createOrReplaceMappings():" + mapping, e);
             }
         }
+        this.hazelcastInstance.getSql().execute("SHOW MAPPINGS").forEach(row ->
+            log.info("createOrReplaceMappings:  AFTER: " + row));
     }
 
 
