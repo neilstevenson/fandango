@@ -39,6 +39,9 @@ public class ApplicationConfig {
     @Bean
     public Config config() {
         Config config = new ClasspathYamlConfig("hazelcast.yml");
+        if (!System.getProperty("NODE_NAME", "").isBlank()) {
+            config.setInstanceName(System.getProperty("NODE_NAME"));
+        }
 
         NetworkConfig networkConfig = config.getNetworkConfig();
 

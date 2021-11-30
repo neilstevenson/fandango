@@ -16,13 +16,13 @@
 
 package neil.demo;
 
-import java.util.Arrays;
+//import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.concurrent.TimeUnit;
+//import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,7 +32,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.hazelcast.core.DistributedObject;
 import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.HazelcastJsonValue;
+//import com.hazelcast.core.HazelcastJsonValue;
 import com.hazelcast.map.IMap;
 import com.hazelcast.multimap.MultiMap;
 
@@ -45,7 +45,7 @@ import lombok.extern.slf4j.Slf4j;
 @Configuration
 @Slf4j
 public class ApplicationRunner {
-    private static final int FIVE = 5;
+    //private static final int FIVE = 5;
 
     @Value("${spring.application.name}")
     private String springApplicationName;
@@ -73,8 +73,9 @@ public class ApplicationRunner {
             } else {
                 this.loadTestData();
             }*/
-            //TODO this.logPartitions();
+            //this.logPartitions();
 
+            /*
             int count = 0;
             while (this.hazelcastInstance.getLifecycleService().isRunning()) {
                 TimeUnit.MINUTES.sleep(1);
@@ -88,6 +89,7 @@ public class ApplicationRunner {
                     //TODO this.logJobs();
                 }
             }
+            */
         };
     }
 
@@ -95,7 +97,7 @@ public class ApplicationRunner {
     /**
      * <p>Insert test data
      * </p>
-     */
+     *
     @SuppressWarnings("checkstyle:magicnumber")
     private void loadTestData() {
         IMap<String, HazelcastJsonValue> authorisationMap

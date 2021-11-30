@@ -1,0 +1,110 @@
+---
+# Service DNS will be "fandango-hazelcast.default.svc.cluster.local".
+---
+# Main service: For the cluster to discovery itself
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fandango-hazelcast
+spec:
+  clusterIP: None
+  selector:
+    app: fandango-hazelcast
+  ports:
+  - port: 5701
+---
+# Secondary service: To allow remote connection, from Desktop
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fandango-hazelcast-extra
+spec:
+  selector:
+    app: fandango-hazelcast
+  ports:
+  - port: 5701
+  type: LoadBalancer
+---
+# Management Center
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fandango-management-center
+spec:
+  selector:
+    app: fandango-management-center
+  ports:
+    - name: fandango-management-center
+      port: 8080
+      targetPort: 8080
+  type: LoadBalancer
+---
+# Creates 2 pods, fandango-hazelcast-0 and fandango-hazelcast-1 in a stateful set.
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: fandango-hazelcast
+spec:
+  replicas: 2
+  serviceName: fandango-hazelcast
+  selector:
+    matchLabels:
+      app: fandango-hazelcast
+  template:
+    metadata:
+      labels:
+        app: fandango-hazelcast
+    spec:
+      containers:
+        - image: "hazelcast-platform-demos/fandango-hazelcast"
+          imagePullPolicy: Never
+          livenessProbe:
+            httpGet:
+              path: /hazelcast/health/node-state
+              port: 5701
+          name: fandango-hazelcast-container
+          readinessProbe:
+            httpGet:
+              path: /hazelcast/health/ready
+              port: 5701
+            initialDelaySeconds: 30
+          resources:
+            limits:
+              cpu: "2.0"
+            requests:
+              cpu: "2.0"
+---
+# Only need 1 management-center
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fandango-management-center
+spec:
+  selector:
+    matchLabels:
+      app: fandango-management-center
+  template:
+    metadata:
+      labels:
+        app: fandango-management-center
+    spec:
+      containers:
+        - image: "hazelcast-platform-demos/fandango-management-center"
+          imagePullPolicy: Never
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8081
+          name: fandango-management-center-container
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8081
+            initialDelaySeconds: 30
+---
+

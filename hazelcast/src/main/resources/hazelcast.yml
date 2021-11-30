@@ -1,6 +1,5 @@
 hazelcast:
   cluster-name: '@my.cluster0.name@'
-  instance-name: '${NODE_NAME}'
   license-key: '@my.license.key@'
 
   properties:
@@ -26,3 +25,5 @@ hazelcast:
   #
   jet:
     enabled: true
+    resource-upload-enabled: true
+ 

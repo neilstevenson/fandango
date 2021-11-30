@@ -38,7 +38,8 @@ fi
 # And MC
 if [ "$FIRST" == "management" ] && [ "$SECOND" == "center" ]
 then
- JAVA_ARGS="${JAVA_ARGS} -e HOST_IP=${HOST_IP}"
+ JAVA_ARGS="${JAVA_ARGS} -e CLUSTER0_ADDRESS=${HOST_IP}:6701"
+ JAVA_ARGS="${JAVA_ARGS} -e CLUSTER2_ADDRESS=${HOST_IP}:5701"
 fi
 
 # Internal/external port mapping
