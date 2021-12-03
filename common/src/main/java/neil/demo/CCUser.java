@@ -19,15 +19,12 @@ package neil.demo;
 import java.io.Serializable;
 import java.util.List;
 
-import lombok.Data;
-
 /**
  * <p>A credit card user account.
  * Has some authorizations and some transactions
  * </p>
  */
 @SuppressWarnings("serial")
-@Data
 public class CCUser implements Serializable {
 
     private String userId;
@@ -36,5 +33,46 @@ public class CCUser implements Serializable {
     private List<String> authIds;
     private List<String> txnIds;
     private int creditLimit;
+    public String getUserId() {
+        return userId;
+    }
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+    public String getFirstName() {
+        return firstName;
+    }
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+    public String getLastName() {
+        return lastName;
+    }
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+    public List<String> getAuthIds() {
+        return authIds;
+    }
+    public void setAuthIds(List<String> authIds) {
+        this.authIds = authIds;
+    }
+    public List<String> getTxnIds() {
+        return txnIds;
+    }
+    public void setTxnIds(List<String> txnIds) {
+        this.txnIds = txnIds;
+    }
+    public int getCreditLimit() {
+        return creditLimit;
+    }
+    public void setCreditLimit(int creditLimit) {
+        this.creditLimit = creditLimit;
+    }
+    @Override
+    public String toString() {
+        return "CCUser [userId=" + userId + ", firstName=" + firstName + ", lastName=" + lastName + ", authIds="
+                + authIds + ", txnIds=" + txnIds + ", creditLimit=" + creditLimit + "]";
+    }
 
 }

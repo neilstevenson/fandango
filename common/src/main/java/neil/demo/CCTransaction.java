@@ -22,13 +22,10 @@ import com.hazelcast.nio.serialization.Portable;
 import com.hazelcast.nio.serialization.PortableReader;
 import com.hazelcast.nio.serialization.PortableWriter;
 
-import lombok.Data;
-
 /**
  * <p>A simplistic credit card transaction
  * </p>
  */
-@Data
 public class CCTransaction implements Portable {
 
     private String txnId;
@@ -57,6 +54,34 @@ public class CCTransaction implements Portable {
         portableWriter.writeDouble("amount", this.amount);
         portableWriter.writeString("where", this.where);
         portableWriter.writeLong("when", this.when);
+    }
+    public String getTxnId() {
+        return txnId;
+    }
+    public void setTxnId(String txnId) {
+        this.txnId = txnId;
+    }
+    public double getAmount() {
+        return amount;
+    }
+    public void setAmount(double amount) {
+        this.amount = amount;
+    }
+    public String getWhere() {
+        return where;
+    }
+    public void setWhere(String where) {
+        this.where = where;
+    }
+    public long getWhen() {
+        return when;
+    }
+    public void setWhen(long when) {
+        this.when = when;
+    }
+    @Override
+    public String toString() {
+        return "CCTransaction [txnId=" + txnId + ", amount=" + amount + ", where=" + where + ", when=" + when + "]";
     }
 
 }
