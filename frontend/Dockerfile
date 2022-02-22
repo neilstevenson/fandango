@@ -9,5 +9,5 @@ ENV JAVA_OPTS ""
 
 ENTRYPOINT exec java \
    $JAVA_ARGS $JAVA_OPTS \
-   -Dspring.zipkin.base-url=${HOST_IP}:9411 \
+   -Dspring.zipkin.base-url=http://${HOST_IP}:9411/ \
    -jar application.jar    

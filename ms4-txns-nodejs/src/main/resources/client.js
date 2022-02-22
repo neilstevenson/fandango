@@ -54,6 +54,8 @@ function createClientConfig() {
         connectionTimeout: 5000
     }
     var properties = {
+        //FIXME
+        'hazelcast.client.cloud.url': 'https://dev.test.hazelcast.cloud',
         'hazelcast.client.statistics.enabled': true
     }
     // Swap to local?

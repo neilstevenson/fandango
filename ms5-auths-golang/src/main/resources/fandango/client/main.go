@@ -46,6 +46,7 @@ func createClientConfig() hazelcast.Config {
 		clientConfig.Cluster.Network.SetAddresses(member)
 		log.Println("createClientConfig(): Local:", clientConfig.Cluster.Name, clientConfig.Cluster.Network.Addresses)
 	} else {
+                _ = os.Setenv("HZ_CLOUD_COORDINATOR_BASE_URL", "https://dev.test.hazelcast.cloud")
 		clientConfig.Cluster.Name = cluster1_name
 		clientConfig.Cluster.Cloud.Enabled = true
 		clientConfig.Cluster.Cloud.Token = cluster1_discovery_token

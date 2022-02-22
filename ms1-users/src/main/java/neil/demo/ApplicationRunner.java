@@ -277,13 +277,20 @@ public class ApplicationRunner {
             IMap<?, ?> iMap = this.hazelcastInstance.getMap(name);
             log.info("IMap '{}'.size() => {}", iMap.getName(), iMap.size());
             // Use standard print if query fails
-            if (!this.runSelectQuery(iMap.getName())) {
+            String sql = "SELECT * FROM \"" + iMap.getName() + "\"";
+            if (!this.runSelectQuery(sql, iMap.getName())) {
                 // HazelcastJsonValue isn't comparable
                 if (name.startsWith("zipkin")) {
                     new HashSet<>(iMap.keySet()).stream().forEach(key -> log.debug("    - key: '{}'", key));
                 } else {
                     new TreeSet<>(iMap.keySet()).stream().forEach(key -> log.debug("    - key: '{}'", key));
                 }
+            }
+            //XXX Temp debug
+            if (name.equals("zipkin2.span")) {
+                String sql2 = "SELECT __key, JSON_VALUE(this, '$.remote_endpoint.service_name') FROM \"zipkin2.span\""
+                        + " WHERE JSON_VALUE(this, '$.remote_endpoint.service_name') != ''";
+                this.runSelectQuery(sql2, name);
             }
         });
         multiMapNames
@@ -301,11 +308,11 @@ public class ApplicationRunner {
     }
 
     /**
-     * @param mapName
+     * @param sql query, not DDL
+     * @param target the map being queried
      * @return Any exception?
      */
-    private boolean runSelectQuery(String mapName) {
-        String sql = "SELECT * FROM \"" + mapName + "\"";
+    private boolean runSelectQuery(String sql, String target) {
         log.debug("    " + sql);
         try {
             SqlResult sqlResult = this.hazelcastInstance.getSql().execute(sql);
@@ -320,7 +327,7 @@ public class ApplicationRunner {
                 }
                 count++;
             }
-            log.debug("    [{} row{}] {}", count, (count == 1 ? "" : "s"), mapName);
+            log.debug("    [{} row{}] {}", count, (count == 1 ? "" : "s"), target);
             return true;
         } catch (Exception e) {
             log.error("runSelectQuery():" + sql + ":" + e.getMessage());

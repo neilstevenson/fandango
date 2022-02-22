@@ -29,9 +29,6 @@ import org.springframework.boot.autoconfigure.hazelcast.HazelcastAutoConfigurati
     })
 public class Application {
 
-    //FIXME ms5
-    //FIXME ms4
-
     public static void main(String[] args) throws Exception {
         SpringApplication.run(Application.class, args);
     }

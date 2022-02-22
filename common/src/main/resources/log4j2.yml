@@ -72,6 +72,11 @@ Configuration:
           additivity: false
           AppenderRef:
             ref: ConsoleYellow
+        - name: org.springframework.cloud.sleuth
+          level: info
+          additivity: false
+          AppenderRef:
+            ref: ConsoleYellow
         # Useful to see the selected web port
         - name: org.springframework.boot.web.embedded.tomcat.TomcatWebServer
           level: info

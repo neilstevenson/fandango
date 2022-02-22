@@ -75,6 +75,12 @@ public class ApplicationConfig {
                     cloudDiscoveryToken);
             if (cloudDiscoveryToken != null && cloudDiscoveryToken.length() > 0) {
                 clientNetworkConfig.getCloudConfig().setEnabled(true);
+                //FIXME Remove for PRD
+                if (clientConfig.getClusterName().startsWith("de-")) {
+                    clientConfig.setProperty("hazelcast.client.cloud.url", "https://dev.test.hazelcast.cloud");
+                } else {
+                    clientConfig.setProperty("hazelcast.client.cloud.url", "https://uat.hazelcast.cloud");
+                }
                 log.info("Cloud configuration: cluster: " + clientConfig.getClusterName()
                         + ": config: " + clientNetworkConfig.getCloudConfig());
             } else {
