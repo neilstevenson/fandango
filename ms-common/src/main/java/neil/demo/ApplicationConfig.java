@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,12 +75,12 @@ public class ApplicationConfig {
                     cloudDiscoveryToken);
             if (cloudDiscoveryToken != null && cloudDiscoveryToken.length() > 0) {
                 clientNetworkConfig.getCloudConfig().setEnabled(true);
-                //FIXME Remove for PRD
+                /*FIXME Remove for PRD
                 if (clientConfig.getClusterName().startsWith("de-")) {
                     clientConfig.setProperty("hazelcast.client.cloud.url", "https://dev.test.hazelcast.cloud");
                 } else {
                     clientConfig.setProperty("hazelcast.client.cloud.url", "https://uat.hazelcast.cloud");
-                }
+                }*/
                 log.info("Cloud configuration: cluster: " + clientConfig.getClusterName()
                         + ": config: " + clientNetworkConfig.getCloudConfig());
             } else {

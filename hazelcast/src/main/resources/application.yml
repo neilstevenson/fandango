@@ -5,3 +5,5 @@ server:
 spring:
   application:
     name: '@my.hazelcast.app.name@'
+  zipkin:
+    enabled: false

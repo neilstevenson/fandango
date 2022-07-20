@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2022, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -285,12 +285,6 @@ public class ApplicationRunner {
                 } else {
                     new TreeSet<>(iMap.keySet()).stream().forEach(key -> log.debug("    - key: '{}'", key));
                 }
-            }
-            //XXX Temp debug
-            if (name.equals("zipkin2.span")) {
-                String sql2 = "SELECT __key, JSON_VALUE(this, '$.remote_endpoint.service_name') FROM \"zipkin2.span\""
-                        + " WHERE JSON_VALUE(this, '$.remote_endpoint.service_name') != ''";
-                this.runSelectQuery(sql2, name);
             }
         });
         multiMapNames
